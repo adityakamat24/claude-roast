@@ -1,0 +1,7 @@
+# shipped_code — multiple edits across files. {n} = edit count, substituted at runtime.
+{n} edits across the codebase. you SHIPPED. +aura.
+real files, real changes. aura farmed honestly.
+touched grass? no. touched {n} files? absolutely. +aura.
+that is a diff with self-respect. +aura.
+you came to build, not to chat. +aura.
+{n} changes deep. the meter is impressed. +aura.

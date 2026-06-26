@@ -1,0 +1,8 @@
+# Force LF line endings everywhere. Shell scripts MUST be LF — a CRLF shebang
+# (`#!/usr/bin/env bash\r`) fails with "bad interpreter" on Linux/macOS/Git Bash.
+* text=auto eol=lf
+*.sh   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.tsv  text eol=lf
+*.txt  text eol=lf

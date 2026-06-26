@@ -1,0 +1,5 @@
+# shouting — ALL CAPS prompt.
+ALL CAPS will not make it compile faster. tiny -aura.
+i can hear you fine. you are typing. -aura.
+caps lock is not a priority flag. -aura.
+volume noted. argument not found. -aura.

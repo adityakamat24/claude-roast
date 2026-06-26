@@ -1,0 +1,17 @@
+# Working / dev files — not part of the published plugin
+/tasks/
+/CLAUDE.md
+
+# OS cruft
+*.stackdump
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# nervx brain (auto-generated index, if ever present)
+/.nervx/

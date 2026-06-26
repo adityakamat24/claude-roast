@@ -1,0 +1,13 @@
+{
+  "name": "claude-roast",
+  "description": "An aura meter for your statusline. Trivial prompts bleed aura; real work farms it back. Zero tokens, savage verdicts.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Aditya Kamat",
+    "url": "https://github.com/adityakamat24"
+  },
+  "homepage": "https://github.com/adityakamat24/claude-roast",
+  "repository": "https://github.com/adityakamat24/claude-roast",
+  "license": "MIT",
+  "keywords": ["statusline", "fun", "aura", "hooks", "gamification"]
+}

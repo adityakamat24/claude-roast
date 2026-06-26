@@ -1,0 +1,15 @@
+{
+  "name": "claude-roast",
+  "owner": {
+    "name": "adityakamat24",
+    "url": "https://github.com/adityakamat24"
+  },
+  "plugins": [
+    {
+      "name": "claude-roast",
+      "source": "./plugin",
+      "description": "An aura meter for your statusline. Trivial prompts bleed aura; real work farms it back. Zero tokens, savage verdicts.",
+      "version": "0.1.0"
+    }
+  ]
+}

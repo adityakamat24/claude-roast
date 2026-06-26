@@ -1,0 +1,61 @@
+{
+  "_comment": "claude-roast tunables. Numbers/thresholds/patterns only (scalars) so pure-bash can parse without jq. Rank tiers live in ranks.tsv; verdict lines live in verdicts/*.txt. Patterns are POSIX ERE used with bash [[ =~ ]] on the lowercased text (no backslash escapes by design). User override: ~/.claude/aura/config.json wins.",
+  "schema": 1,
+  "mode": "lifetime",
+  "start_aura": 0,
+
+  "clamp_prompt_min": -120,
+  "clamp_prompt_max": 150,
+  "clamp_turn_min": -300,
+  "clamp_turn_max": 300,
+
+  "bar_width": 10,
+  "bar_floor": -300,
+  "bar_ceil": 1200,
+
+  "one_word_max_words": 2,
+  "one_word_pattern": "^(hi|hey|yo|hello|hiya|sup|gm|gn|thanks|thank you|ty|thx|tysm|ok|okay|k|kk|yes|no|yep|nope|nah|cool|nice|great|done|wyd|pls|plz|please|lol|lmao)$",
+  "one_word_delta": -40,
+
+  "folder_only_pattern": "(^|[^a-z])(mkdir|rmdir|touch)([^a-z]|$)|create (a |the )?(folder|directory|dir|file)|make (a |the )?(folder|dir|directory)|new (folder|directory|file)|rename (this |the )?file|delete (this |the )?file|move (this |the )?file",
+  "folder_only_delta": -60,
+
+  "dupe_delta": -50,
+
+  "shouting_min_len": 6,
+  "shouting_caps_ratio": 80,
+  "shouting_delta": -15,
+
+  "begging_pattern": "(pl[sz][[:space:]!.]*){2,}|please[[:space:]]+please",
+  "begging_delta": -15,
+
+  "detailed_min_chars": 240,
+  "detailed_min_sentences": 3,
+  "detailed_base": 50,
+  "detailed_per_100": 15,
+  "detailed_code_fence_bonus": 60,
+  "detailed_max": 150,
+
+  "galaxy_enabled": 0,
+  "galaxy_pattern": "refactor|idempotent|invariant|race condition|benchmark|profil(e|ing)|concurrency|throughput|deduplicat",
+  "galaxy_delta": 20,
+
+  "trivial_solo_pattern": "^[[:space:]]*(mkdir|rmdir|touch|ls|ll|pwd|cd|echo|cat|clear|whoami|date|head|tail|which|tree|mv|cp|rm)([[:space:]]|$)",
+  "trivial_solo_delta": -150,
+
+  "just_a_read_delta": -40,
+
+  "edit_delta_each": 30,
+  "edit_delta_max": 180,
+
+  "test_pattern": "(^|[^a-z])(pytest|cargo|tox|jest|vitest|mocha|rspec|phpunit|gradle|mvn|make|cmake|tsc|ruff|eslint|pylint|mypy|go[[:space:]]+test|dotnet[[:space:]]+test|npm[[:space:]]+(run[[:space:]]+)?(test|build)|yarn[[:space:]]+(test|build)|pnpm[[:space:]]+(test|build))([^a-z]|$)",
+  "test_delta": 80,
+
+  "busy_threshold": 6,
+  "busy_bonus": 30,
+
+  "history_cap": 200,
+  "shame_cap": 5,
+
+  "narrow_cols": 80
+}
