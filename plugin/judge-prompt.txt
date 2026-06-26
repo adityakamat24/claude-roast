@@ -1,0 +1,8 @@
+Rate how well a developer used an AI coding agent on ONE turn, as a savage but fair joke "aura" meter.
+Scale: -300 = trivial or wasteful (a greeting, one mkdir/ls, folder busywork, asking the same thing twice, all-caps demands); 0 = ordinary; +300 = substantial (multi-file edits, running tests/builds, solving something genuinely hard). Judge the SUBSTANCE of the request and what it actually took — not politeness, not length for its own sake.
+
+Turn prompt: {snippet}
+What Claude actually did this turn: {tools}
+
+Output ONLY one line of compact JSON, no prose, no code fence, no double quotes inside the verdict:
+{"d":<integer from -300 to 300>,"v":"<one savage verdict, max 12 words, about the request only, never the person>"}

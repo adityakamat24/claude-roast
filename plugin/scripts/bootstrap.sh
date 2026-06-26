@@ -26,12 +26,16 @@ if [ "$stored_ver" != "$PLUGIN_VER" ]; then
   # Copy plugin artefacts into AURA_HOME (FLAT layout: statusline.sh/lib.sh/cli.sh
   # sit directly in ~/.claude/aura so the user-wired statusLine and the /claude-roast
   # skill can reference stable paths). Skip silently if a source is missing.
-  for f in statusline.sh lib.sh cli.sh; do
+  # Code: always refresh on version change.
+  for f in statusline.sh lib.sh cli.sh judge.sh rate-api.sh; do
     [ -f "$AURA_PLUGIN/scripts/$f" ] && cp -f "$AURA_PLUGIN/scripts/$f" "$AURA_HOME/$f" 2>/dev/null
   done
-  [ -f "$AURA_PLUGIN/config.json" ] && cp -f "$AURA_PLUGIN/config.json" "$AURA_HOME/config.json" 2>/dev/null
-  [ -f "$AURA_PLUGIN/ranks.tsv" ]   && cp -f "$AURA_PLUGIN/ranks.tsv"   "$AURA_HOME/ranks.tsv"   2>/dev/null
-  [ -d "$AURA_PLUGIN/verdicts" ]    && cp -rf "$AURA_PLUGIN/verdicts" "$AURA_HOME/" 2>/dev/null
+  # Data: seed ONLY if missing, so user customisations (config tuning, custom
+  # verdict packs, edited rubric) survive plugin updates.
+  [ -f "$AURA_HOME/config.json" ]      || cp -f "$AURA_PLUGIN/config.json"      "$AURA_HOME/config.json"      2>/dev/null
+  [ -f "$AURA_HOME/ranks.tsv" ]        || cp -f "$AURA_PLUGIN/ranks.tsv"        "$AURA_HOME/ranks.tsv"        2>/dev/null
+  [ -f "$AURA_HOME/judge-prompt.txt" ] || cp -f "$AURA_PLUGIN/judge-prompt.txt" "$AURA_HOME/judge-prompt.txt" 2>/dev/null
+  [ -d "$AURA_HOME/verdicts" ]         || cp -rf "$AURA_PLUGIN/verdicts"        "$AURA_HOME/"                 2>/dev/null
   printf '%s' "$PLUGIN_VER" | atomic_write "$AURA_HOME/.version"
 fi
 

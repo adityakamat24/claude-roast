@@ -1,7 +1,7 @@
 {
   "name": "claude-roast",
-  "description": "An aura meter for your statusline. Trivial prompts bleed aura; real work farms it back. Zero tokens, savage verdicts.",
-  "version": "0.1.0",
+  "description": "An aura meter for your statusline. Trivial prompts bleed aura; real work farms it back. Heuristics by default (zero tokens); optional async Claude rating.",
+  "version": "0.2.0",
   "author": {
     "name": "Aditya Kamat",
     "url": "https://github.com/adityakamat24"

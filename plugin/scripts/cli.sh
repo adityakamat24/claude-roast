@@ -95,12 +95,16 @@ cmd_seed() {
   else
     printf 'warn: %s/scripts/statusline.sh not found (skipped)\n' "$plugin" >&2
   fi
-  cp -f  "$plugin/scripts/lib.sh"  "$AURA_HOME/lib.sh"
-  cp -f  "$plugin/scripts/cli.sh"  "$AURA_HOME/cli.sh"
-  cp -f  "$plugin/config.json"     "$AURA_HOME/config.json"
-  cp -f  "$plugin/ranks.tsv"       "$AURA_HOME/ranks.tsv"
-  cp -rf "$plugin/verdicts"        "$AURA_HOME/verdicts"
-  chmod +x "$AURA_HOME/cli.sh" 2>/dev/null
+  cp -f  "$plugin/scripts/lib.sh"   "$AURA_HOME/lib.sh"
+  cp -f  "$plugin/scripts/cli.sh"   "$AURA_HOME/cli.sh"
+  cp -f  "$plugin/scripts/judge.sh" "$AURA_HOME/judge.sh" 2>/dev/null
+  cp -f  "$plugin/scripts/rate-api.sh" "$AURA_HOME/rate-api.sh" 2>/dev/null
+  # Data: seed only if missing, so customisations survive a re-seed.
+  [ -f "$AURA_HOME/config.json" ]      || cp -f "$plugin/config.json"      "$AURA_HOME/config.json"
+  [ -f "$AURA_HOME/ranks.tsv" ]        || cp -f "$plugin/ranks.tsv"        "$AURA_HOME/ranks.tsv"
+  [ -f "$AURA_HOME/judge-prompt.txt" ] || cp -f "$plugin/judge-prompt.txt" "$AURA_HOME/judge-prompt.txt" 2>/dev/null
+  [ -d "$AURA_HOME/verdicts" ]         || cp -rf "$plugin/verdicts"        "$AURA_HOME/verdicts"
+  chmod +x "$AURA_HOME/cli.sh" "$AURA_HOME/judge.sh" "$AURA_HOME/rate-api.sh" 2>/dev/null
 
   # create initial state.json if missing
   if [ ! -f "$AURA_STATE" ]; then

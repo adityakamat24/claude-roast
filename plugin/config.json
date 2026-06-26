@@ -57,5 +57,14 @@
   "history_cap": 200,
   "shame_cap": 5,
 
-  "narrow_cols": 80
+  "narrow_cols": 80,
+
+  "_judge_comment": "Model-based 'natural' rating. judge_mode: off=pure heuristics (zero tokens); gated=model only on turns heuristics cant judge (cheapest auto); always=model rates every turn. judge_cmd: auto=lean direct API (rate-api.sh) when ANTHROPIC_API_KEY is set (~170 tokens, fast), else 'claude -p' (no key, but ~30s + heavier). Or set a custom command (e.g. a local Ollama wrapper). Runs async so it never blocks; falls back to the heuristic on any failure.",
+  "judge_mode": "off",
+  "judge_cmd": "auto",
+  "judge_model": "haiku",
+  "judge_timeout": 60,
+  "judge_snippet_max": 220,
+  "judge_gate_abs": 130,
+  "judge_poll_ms": 1500
 }

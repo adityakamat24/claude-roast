@@ -31,6 +31,12 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/finalise.sh\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/judge.sh\"",
+            "timeout": 120,
+            "async": true
           }
         ]
       }

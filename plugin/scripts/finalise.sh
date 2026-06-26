@@ -49,6 +49,15 @@ if [ -f "$tools_file" ]; then
   done < "$tools_file"
 fi
 
+# Compact tool summary handed to the async model judge (judge.sh)
+if [ "$n" -eq 0 ]; then
+  tool_summary="no tools (a pure chat answer)"
+else
+  _tt="no"; [ "$tests" -eq 1 ] && _tt="yes"
+  tool_summary="$n tool calls; $edits file edits; ran tests: $_tt; first: $first_tool ${first_cmd:0:48}"
+fi
+tool_summary="$(field_clean "$tool_summary")"
+
 # ── Compute TOOL signal ───────────────────────────────────────────────────────
 tool_delta=0; tool_pack=""
 trivial_pat="$(cfg_str trivial_solo_pattern)"
@@ -153,5 +162,29 @@ printf '%s\n' "${updated}|${NET}|${PACK}|${n}|${clean_snippet}|${clean_verdict}"
 # ── Clear session scratch ─────────────────────────────────────────────────────
 : > "$pending_file"
 : > "$tools_file"
+
+# ── Hand off to the async model judge (judge.sh) when enabled ────────────────
+# We always wrote the heuristic provisional above (instant + the fallback);
+# judge.sh refines it a beat later. judge_input is its self-contained snapshot.
+jmode="${AURA_JUDGE_MODE:-$(cfg_str judge_mode off)}"
+judge_this=0
+case "$jmode" in
+  always) judge_this=1 ;;
+  gated)
+    gate="$(cfg_num judge_gate_abs 130)"; absnet="${NET#-}"
+    { [ "$absnet" -lt "$gate" ] || [ "$n" -eq 0 ]; } && judge_this=1
+    ;;
+esac
+if [ "$judge_this" -eq 1 ]; then
+  smax="$(cfg_num judge_snippet_max 220)"
+  {
+    printf 'turn_id=%s\n' "$turns"
+    printf 'hdelta=%s\n'  "$NET"
+    printf 'hpack=%s\n'   "$PACK"
+    printf 'ts=%s\n'      "$updated"
+    printf 'snippet=%s\n' "$(field_clean "${snippet:0:$smax}")"
+    printf 'tools=%s\n'   "$tool_summary"
+  } | atomic_write "$(sess_dir "$sid")/judge_q/${updated}_${turns}.in"
+fi
 
 exit 0

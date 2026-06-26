@@ -25,6 +25,7 @@ AURA_PLUGIN="${AURA_PLUGIN:-$(cd "$(_aura_self_dir)/.." 2>/dev/null && pwd)}"
 cfg_path()     { if [ -f "$AURA_HOME/config.json" ]; then printf '%s' "$AURA_HOME/config.json"; else printf '%s' "$AURA_PLUGIN/config.json"; fi; }
 ranks_path()   { if [ -f "$AURA_HOME/ranks.tsv" ];   then printf '%s' "$AURA_HOME/ranks.tsv";   else printf '%s' "$AURA_PLUGIN/ranks.tsv";   fi; }
 verdicts_dir() { if [ -d "$AURA_HOME/verdicts" ];    then printf '%s' "$AURA_HOME/verdicts";    else printf '%s' "$AURA_PLUGIN/verdicts";    fi; }
+judge_prompt_path() { if [ -f "$AURA_HOME/judge-prompt.txt" ]; then printf '%s' "$AURA_HOME/judge-prompt.txt"; else printf '%s' "$AURA_PLUGIN/judge-prompt.txt"; fi; }
 
 # ── JSON read (flat, by unique key name; pure bash) ──────────────────────────
 # json_str <json> <key>  -> first string value for key, quotes stripped.
@@ -161,6 +162,39 @@ trim()  { local s="$1"; s="${s#"${s%%[![:space:]]*}"}"; s="${s%"${s##*[![:space:
 # ── Session scratch ──────────────────────────────────────────────────────────
 sess_dir() { printf '%s/%s' "$AURA_SESS" "$(sanitize "${1:-default}")"; }
 ensure_home() { mkdir -p "$AURA_HOME" "$AURA_SESS" "$(verdicts_dir)" 2>/dev/null; mkdir -p "$AURA_HOME" "$AURA_SESS" 2>/dev/null; }
+
+# ── Concurrency lock (mkdir-based; flock is unavailable) ─────────────────────
+# lock_acquire <lockdir> [timeout_ms] — atomic mkdir spinlock with stale-steal.
+lock_acquire() {
+  local lock="$1" timeout="${2:-3000}" waited=0
+  while ! mkdir "$lock" 2>/dev/null; do
+    # steal a stale lock (holder died) — older than 15s
+    if [ -d "$lock" ]; then
+      local age; age=$(( $(date +%s) - $(stat -c %Y "$lock" 2>/dev/null || echo 0) ))
+      [ "$age" -gt 15 ] 2>/dev/null && rmdir "$lock" 2>/dev/null
+    fi
+    sleep 0.1 2>/dev/null || sleep 1
+    waited=$((waited + 100))
+    [ "$waited" -ge "$timeout" ] && return 1
+  done
+  return 0
+}
+lock_release() { rmdir "$1" 2>/dev/null; }
+
+# history_rewrite_ts <ts> <delta> <pack> <tools> <snippet> <verdict>
+# Replace the history.log line whose first field == ts (used by the async judge).
+history_rewrite_ts() {
+  local ts="$1" d="$2" pack="$3" tools="$4" snip="$5" verd="$6" tmp line found=0
+  [ -f "$AURA_HISTORY" ] || return 0
+  tmp="$(mktemp 2>/dev/null)" || tmp="$AURA_HISTORY.tmp.$$"
+  while IFS= read -r line; do
+    case "$line" in
+      "$ts|"*) printf '%s\n' "${ts}|${d}|${pack}|${tools}|$(field_clean "$snip")|$(field_clean "$verd")" >> "$tmp"; found=1 ;;
+      *)       printf '%s\n' "$line" >> "$tmp" ;;
+    esac
+  done < "$AURA_HISTORY"
+  if [ "$found" -eq 1 ]; then mv -f "$tmp" "$AURA_HISTORY"; else rm -f "$tmp"; fi
+}
 
 # ── ANSI ─────────────────────────────────────────────────────────────────────
 AURA_RST=$'\033[0m'; AURA_DIM=$'\033[2m'

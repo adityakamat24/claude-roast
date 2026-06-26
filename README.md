@@ -102,6 +102,32 @@ Everything is tunable: numbers and regex patterns live in `~/.claude/aura/config
 
 ---
 
+## Natural rating with Claude (optional, off by default)
+
+By default claude-roast is **pure heuristics — zero tokens, no model calls.** But heuristics don't *understand* a turn; they pattern-match. If you'd rather have Claude **actually judge** each turn (catching what regex can't — e.g. a substantive pure-chat question that heuristics score a flat `neutral 0`), turn on the model judge in `~/.claude/aura/config.json`:
+
+```json
+"judge_mode": "gated"
+```
+
+- **`off`** (default) — heuristics only. Zero tokens.
+- **`gated`** — cheapest auto path: heuristics score instantly; the model only re-rates the turns heuristics can't judge (pure chat, conflicting signals). ~80–90% of turns stay free.
+- **`always`** — Claude rates every turn, for the most consistent meter.
+
+It runs **async** — the heuristic provisional shows instantly and the model refines it a beat later, so it **never blocks a turn** — and it **falls back to the heuristic** on any failure (offline, no auth, timeout). It can't stall or break your session. Model-judged turns are tagged `model` in `/claude-roast` and the hall of shame.
+
+**Which model / how lean?** Controlled by `judge_cmd`:
+
+| `judge_cmd` | What it uses | Setup | Cost / speed |
+|---|---|---|---|
+| `auto` (default) | direct Anthropic API (`rate-api.sh`) **if `ANTHROPIC_API_KEY` is set**, else `claude -p` | none, or a key | API: ~170 tokens, ~1–2s · `claude -p`: heavier, ~20–30s |
+| `claude` | `claude -p` on your Claude Code login | none | no key, but loads the full agent each call (slower, more tokens) |
+| *custom cmd* | anything speaking `cmd -p --model <m> "<prompt>"` | yours | e.g. a local **Ollama** wrapper → zero API tokens |
+
+For the leanest "Claude rates it" experience (recommended): `judge_mode: gated` **+** `export ANTHROPIC_API_KEY=…`. The rubric the model follows lives in `judge-prompt.txt` — edit it to retune the personality. Quick toggle without editing config: `export AURA_JUDGE_MODE=always` (or `off`/`gated`).
+
+---
+
 ## Ranks
 
 | Aura | Rank | Face |
