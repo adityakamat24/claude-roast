@@ -122,4 +122,16 @@ printf '%s' "$hash" | atomic_write "$AURA_LASTHASH"
 snippet="$(field_clean "${msg:0:60}")"
 printf '%s' "${prompt_delta}|${pack}|${hash}|${words}|${snippet}" | atomic_write "$(sess_dir "$sid")/pending"
 
+# ── self mode: ask THE SESSION MODEL to self-rate via a hidden marker ────────
+# UserPromptSubmit stdout (exit 0) is injected into the model's context. In
+# every other mode we emit nothing. The format example below uses <number> /
+# <verdict> placeholders (which contain '>') so it can never match the Stop
+# hook's extractor — only the model's real marker (no '>' in it) matches.
+jmode="${AURA_JUDGE_MODE:-$(cfg_str judge_mode off)}"
+if [ "$jmode" = "self" ]; then
+  cat <<'INSTR'
+[claude-roast meter] When you have fully finished answering, append on a new final line exactly one HTML comment rating how well this turn used you, with nothing after it. Use this format: <!--aura: <number> | <verdict> --> where <number> is an integer from -300 (trivial or wasteful: a greeting, one mkdir, folder busywork, asking the same thing twice) to 300 (substantial: real multi-file changes, running tests, solving something hard), and <verdict> is ONE genuinely funny, savage-but-fair line of at most 12 words about the request only (never the person), containing no >, |, or quote characters. The comment is hidden from the user; it just drives a status-line aura meter. Keep doing your normal work first; this is only a trailing tag.
+INSTR
+fi
+
 exit 0

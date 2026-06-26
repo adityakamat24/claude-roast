@@ -196,6 +196,16 @@ history_rewrite_ts() {
   if [ "$found" -eq 1 ]; then mv -f "$tmp" "$AURA_HISTORY"; else rm -f "$tmp"; fi
 }
 
+# ── Self-roast marker (judge_mode=self) ─────────────────────────────────────
+# The session model appends a hidden  <!--aura: <int> | <verdict> -->  to its
+# reply; finalise.sh extracts it from the transcript. The extractor pattern
+# requires NO '>' between "aura:" and "-->", so the instruction's own template
+# (which uses <number>/<verdict> placeholders containing '>') can never self-match.
+marker_last()    { grep -o '<!--aura:[^>]*-->' "$1" 2>/dev/null | tail -1; }
+marker_count()   { grep -o '<!--aura:[^>]*-->' "$1" 2>/dev/null | wc -l | tr -d ' '; }
+marker_delta()   { printf '%s' "$1" | sed -n 's/^<!--aura:[[:space:]]*\(-\{0,1\}[0-9][0-9]*\).*/\1/p'; }
+marker_verdict() { printf '%s' "$1" | sed -n 's/^<!--aura:[^|]*|[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*-->$/\1/p'; }
+
 # ── ANSI ─────────────────────────────────────────────────────────────────────
 AURA_RST=$'\033[0m'; AURA_DIM=$'\033[2m'
 AURA_RED=$'\033[31m'; AURA_GRN=$'\033[32m'; AURA_YLW=$'\033[33m'

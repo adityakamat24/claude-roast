@@ -6,6 +6,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 in="$(cat)"
 sid="$(json_str "$in" session_id)"
 [ -z "$sid" ] && sid=default
+transcript="$(json_str "$in" transcript_path)"
 
 # stop_hook_active is a JSON boolean (unquoted), so grep directly
 if printf '%s' "$in" | grep -qE '"stop_hook_active"[[:space:]]*:[[:space:]]*(true|"true")'; then
@@ -97,6 +98,29 @@ fi
 verdict="$(pick_verdict "$PACK")"
 # Replace {n} placeholder with edit count for shipped_code
 [ "$PACK" = "shipped_code" ] && verdict="${verdict//\{n\}/$edits}"
+
+# ── self mode: override with the session model's own verdict marker ───────────
+# The model appended  <!--aura: N | verdict -->  to its reply. Extract it from
+# the transcript (instant — no model call). Freshness via a per-session marker
+# count so a stale marker from a previous turn is never reused. Any miss → the
+# heuristic above stands (so it can never break).
+jmode="${AURA_JUDGE_MODE:-$(cfg_str judge_mode off)}"
+if [ "$jmode" = "self" ] && [ -n "$transcript" ] && [ -f "$transcript" ]; then
+  mc_file="$(sess_dir "$sid")/marker_count"
+  prev_mc=0; [ -f "$mc_file" ] && prev_mc="$(cat "$mc_file" 2>/dev/null)"
+  cur_mc="$(marker_count "$transcript")"; cur_mc="${cur_mc:-0}"
+  printf '%s' "$cur_mc" | atomic_write "$mc_file"
+  if [ "$cur_mc" -gt "${prev_mc:-0}" ] 2>/dev/null; then
+    mk="$(marker_last "$transcript")"
+    mdelta="$(marker_delta "$mk")"
+    mverd="$(marker_verdict "$mk")"
+    if [ -n "$mdelta" ]; then
+      NET="$(clampi "$mdelta" "$(cfg_num clamp_turn_min -300)" "$(cfg_num clamp_turn_max 300)")"
+      [ -n "$mverd" ] && verdict="$(field_clean "$mverd")"
+      PACK="claude"
+    fi
+  fi
+fi
 
 # ── Load current state ────────────────────────────────────────────────────────
 start_aura="$(cfg_num start_aura 0)"

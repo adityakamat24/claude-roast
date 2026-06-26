@@ -8,7 +8,8 @@ JUDGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$JUDGE_DIR/lib.sh"
 
 mode="${AURA_JUDGE_MODE:-$(cfg_str judge_mode off)}"
-[ "$mode" = "off" ] && exit 0
+# self mode is handled synchronously in finalise (no model call here); off does nothing.
+case "$mode" in gated|always) ;; *) exit 0 ;; esac
 
 # session id from stdin (Stop event) or optional $1 (tests)
 in="$(cat 2>/dev/null)"

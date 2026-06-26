@@ -59,7 +59,7 @@
 
   "narrow_cols": 80,
 
-  "_judge_comment": "Model-based 'natural' rating. judge_mode: off=pure heuristics (zero tokens); gated=model only on turns heuristics cant judge (cheapest auto); always=model rates every turn. judge_cmd: auto=lean direct API (rate-api.sh) when ANTHROPIC_API_KEY is set (~170 tokens, fast), else 'claude -p' (no key, but ~30s + heavier). Or set a custom command (e.g. a local Ollama wrapper). Runs async so it never blocks; falls back to the heuristic on any failure.",
+  "_judge_comment": "Model-based 'natural' rating. judge_mode: off=pure heuristics (zero tokens); self=the SESSION model (e.g. Opus) self-rates by appending a hidden <!--aura: N | verdict --> marker that finalise extracts from the transcript (instant, funniest, no extra call/key, ~40 tokens/turn folded into the reply); gated/always=a SEPARATE model rates via judge_cmd. judge_cmd (gated/always only): auto=lean direct API (rate-api.sh) when ANTHROPIC_API_KEY is set, else 'claude -p' (no key, heavier), or a custom command. gated/always run async and fall back to the heuristic on any failure.",
   "judge_mode": "off",
   "judge_cmd": "auto",
   "judge_model": "haiku",

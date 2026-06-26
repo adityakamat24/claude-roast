@@ -111,12 +111,13 @@ By default claude-roast is **pure heuristics — zero tokens, no model calls.** 
 ```
 
 - **`off`** (default) — heuristics only. Zero tokens.
-- **`gated`** — cheapest auto path: heuristics score instantly; the model only re-rates the turns heuristics can't judge (pure chat, conflicting signals). ~80–90% of turns stay free.
-- **`always`** — Claude rates every turn, for the most consistent meter.
+- **`self`** ⭐ recommended — **the session model itself** (e.g. Opus, the one you're already talking to) rates each turn. A `UserPromptSubmit` hook quietly asks it to end its reply with a hidden `<!--aura: N | verdict -->` marker; the `Stop` hook extracts that from the transcript. **No separate call, no API key, near-instant** (the verdict is already in the reply the moment the turn ends), and the **funniest** option — it's your main model, and it just *did* the turn so it has full context, not a summary. ~40 tokens folded into the turn you were already paying for.
+- **`gated`** — a *separate, cheaper* model judges only the turns heuristics can't (pure chat, conflicting signals). Runs async. ~80–90% of turns stay free.
+- **`always`** — a *separate* model rates every turn, async.
 
-It runs **async** — the heuristic provisional shows instantly and the model refines it a beat later, so it **never blocks a turn** — and it **falls back to the heuristic** on any failure (offline, no auth, timeout). It can't stall or break your session. Model-judged turns are tagged `model` in `/claude-roast` and the hall of shame.
+`self` and `gated`/`always` both **fall back to the heuristic** on any miss (the model skips the marker, you're offline, a timeout), so they can never stall or break a turn. `gated`/`always` run **async** (the heuristic shows instantly, the model refines a beat later); `self` is synchronous-instant (nothing to wait for — the verdict rode along in the reply). Model-rated turns are tagged `model`/`claude` in `/claude-roast` and the hall of shame.
 
-**Which model / how lean?** Controlled by `judge_cmd`:
+**`gated`/`always` only — which separate model / how lean?** Controlled by `judge_cmd` (`self` and `off` ignore this):
 
 | `judge_cmd` | What it uses | Setup | Cost / speed |
 |---|---|---|---|
@@ -124,7 +125,7 @@ It runs **async** — the heuristic provisional shows instantly and the model re
 | `claude` | `claude -p` on your Claude Code login | none | no key, but loads the full agent each call (slower, more tokens) |
 | *custom cmd* | anything speaking `cmd -p --model <m> "<prompt>"` | yours | e.g. a local **Ollama** wrapper → zero API tokens |
 
-For the leanest "Claude rates it" experience (recommended): `judge_mode: gated` **+** `export ANTHROPIC_API_KEY=…`. The rubric the model follows lives in `judge-prompt.txt` — edit it to retune the personality. Quick toggle without editing config: `export AURA_JUDGE_MODE=always` (or `off`/`gated`).
+**Recommended:** `judge_mode: self` — funniest, near-instant, no key, no separate call. Use `gated` + `export ANTHROPIC_API_KEY=…` only if you specifically want the rating done by a *separate* model out-of-band. The `self`-mode instruction lives in `score-prompt.sh`; the separate-model rubric is `judge-prompt.txt`. Quick toggle without editing config: `export AURA_JUDGE_MODE=self` (or `off`/`gated`/`always`).
 
 ---
 
